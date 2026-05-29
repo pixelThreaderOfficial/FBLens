@@ -157,3 +157,27 @@ def test_query_stuffing(test_db, tokenizer):
     assert len(candidates_stuffed) == 1
     # Both should have exactly the same raw prefix score
     assert candidates_single[0].scores["prefix_raw"] == candidates_stuffed[0].scores["prefix_raw"]
+
+def test_storage_transactions(test_db):
+    # Test successful transaction commit
+    with test_db.transaction():
+        doc_1 = test_db.insert_document("Trans Title 1", "Trans Content 1", "Blog")
+        doc_2 = test_db.insert_document("Trans Title 2", "Trans Content 2", "Blog")
+    
+    assert test_db.get_document(doc_1) is not None
+    assert test_db.get_document(doc_2) is not None
+    
+    # Test transaction rollback on failure
+    try:
+        with test_db.transaction():
+            doc_3 = test_db.insert_document("Trans Title 3", "Trans Content 3", "Blog")
+            # Force an error
+            raise ValueError("Forced error to trigger rollback")
+    except ValueError:
+        pass
+        
+    # doc_3 should NOT be in the database
+    # We query the database to verify it was rolled back
+    conn = test_db._get_connection()
+    row = conn.execute("SELECT id FROM documents WHERE title = 'Trans Title 3'").fetchone()
+    assert row is None
