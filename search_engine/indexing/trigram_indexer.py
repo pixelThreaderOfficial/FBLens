@@ -28,11 +28,11 @@ class TrigramIndexer:
 
     def index_document(self, doc_id: int, title: str, content: str) -> None:
         """
-        Extracts tokens from the title and content, generates trigrams,
-        aggregates their occurrences, and batch inserts them into SQLite.
+        Extracts tokens from the title and content, generates unique trigrams,
+        and batch inserts them into SQLite.
         """
-        # Map of trigram -> aggregated frequency within this document
-        trigram_frequencies: Dict[str, int] = defaultdict(int)
+        # Set of unique trigrams within this document
+        trigrams_set: Set[str] = set()
 
         # Tokenize title and content together
         # We merge them as trigrams are field-agnostic for general typo tolerance
@@ -41,17 +41,16 @@ class TrigramIndexer:
 
         for token in tokens:
             trigrams = self.generate_trigrams_for_token(token)
-            for trigram in trigrams:
-                trigram_frequencies[trigram] += 1
+            trigrams_set.update(trigrams)
 
         # If no trigrams generated (e.g. document only has short words), exit early
-        if not trigram_frequencies:
+        if not trigrams_set:
             return
 
-        # Prepare entries for database: (trigram, doc_id, frequency)
-        entries: List[Tuple[str, int, int]] = [
-            (trigram, doc_id, freq)
-            for trigram, freq in trigram_frequencies.items()
+        # Prepare entries for database: (trigram, doc_id)
+        entries: List[Tuple[str, int]] = [
+            (trigram, doc_id)
+            for trigram in trigrams_set
         ]
 
         # Batch insert into trigram table

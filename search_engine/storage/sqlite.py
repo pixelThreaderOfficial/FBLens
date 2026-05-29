@@ -130,16 +130,14 @@ class SQLiteStorage:
         if not self._in_transaction:
             conn.commit()
 
-    def insert_trigrams(self, entries: List[Tuple[str, int, int]]) -> None:
+    def insert_trigrams(self, entries: List[Tuple[str, int]]) -> None:
         """
         Batch inserts trigram index entries.
-        entries: List of Tuple[trigram, doc_id, frequency]
+        entries: List of Tuple[trigram, doc_id]
         """
         query = """
-            INSERT INTO trigram_index (trigram, doc_id, frequency)
-            VALUES (?, ?, ?)
-            ON CONFLICT(trigram, doc_id) DO UPDATE SET
-                frequency = frequency + excluded.frequency
+            INSERT OR IGNORE INTO trigram_index (trigram, doc_id)
+            VALUES (?, ?)
         """
         conn = self._get_connection()
         conn.executemany(query, entries)
@@ -160,13 +158,12 @@ class SQLiteStorage:
         rows = conn.execute(query, (prefix,)).fetchall()
         return [(row["doc_id"], row["frequency"]) for row in rows]
 
-    def get_documents_by_trigrams(self, trigrams: List[str]) -> List[Tuple[int, int, int]]:
+    def get_documents_by_trigrams(self, trigrams: List[str]) -> List[Tuple[int, int]]:
         """
         Given a list of query trigrams, finds matching documents.
-        Returns a list of Tuple[doc_id, match_count, sum_frequency] indicating:
+        Returns a list of Tuple[doc_id, match_count] indicating:
         - doc_id: the document ID
         - match_count: how many of the query's trigrams are present in the document
-        - sum_frequency: the sum of the frequencies of the matched trigrams in that document
         """
         if not trigrams:
             return []
@@ -174,14 +171,14 @@ class SQLiteStorage:
         # Generate placeholders like (?, ?, ?)
         placeholders = ",".join(["?"] * len(trigrams))
         query = f"""
-            SELECT doc_id, COUNT(*) as match_count, SUM(frequency) as sum_frequency
+            SELECT doc_id, COUNT(*) as match_count
             FROM trigram_index
             WHERE trigram IN ({placeholders})
             GROUP BY doc_id
         """
         conn = self._get_connection()
         rows = conn.execute(query, trigrams).fetchall()
-        return [(row["doc_id"], row["match_count"], row["sum_frequency"]) for row in rows]
+        return [(row["doc_id"], row["match_count"]) for row in rows]
 
     def get_vocabulary(self) -> Set[str]:
         """Retrieves and caches the vocabulary of all unique tokens from all documents."""

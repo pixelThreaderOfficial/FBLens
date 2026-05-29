@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS prefix_index (
 CREATE TABLE IF NOT EXISTS trigram_index (
     trigram TEXT NOT NULL,
     doc_id INTEGER NOT NULL,
-    frequency INTEGER DEFAULT 1,
     PRIMARY KEY (trigram, doc_id),
     FOREIGN KEY (doc_id) REFERENCES documents (id) ON DELETE CASCADE
 );

@@ -48,13 +48,13 @@ class TrigramRetriever:
             return []
 
         # Retrieve matches from the trigram index
-        # SQLite: get_documents_by_trigrams returns List[Tuple[doc_id, match_count, sum_frequency]]
+        # SQLite: get_documents_by_trigrams returns List[Tuple[doc_id, match_count]]
         matches = self.storage.get_documents_by_trigrams(list(query_trigrams))
         if not matches:
             return []
 
         candidates: List[ScoredCandidate] = []
-        for doc_id, match_count, _ in matches:
+        for doc_id, match_count in matches:
             candidates.append(
                 ScoredCandidate(
                     doc_id=doc_id,
