@@ -10,3 +10,7 @@ __pycache__/
 *.sqlite
 search.db
 test_search_fixture.db
+
+# Temporary testing and benchmark files
+tests/run_benchmarks.py
+tests/run_tests_pure.py
