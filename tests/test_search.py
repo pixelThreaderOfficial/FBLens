@@ -123,3 +123,37 @@ def test_pipeline_end_to_end(test_db, tokenizer):
     results_sqlite = pipeline.search("sqlite", limit=5)
     assert len(results_sqlite) == 1
     assert results_sqlite[0].document.title == "SQLite schema"
+
+def test_long_word_failures(test_db, tokenizer):
+    prefix_idx = PrefixIndexer(test_db, tokenizer)
+    
+    # Insert a document with extremely long words
+    doc_id = test_db.insert_document("Internationalization is key", "Let us build personalization and visualization tools.", "Blog")
+    prefix_idx.index_document(doc_id, "Internationalization is key", "Let us build personalization and visualization tools.")
+    
+    pref_retriever = PrefixRetriever(test_db, tokenizer)
+    
+    # Querying for the full long word (length > 12) should successfully match
+    candidates = pref_retriever.retrieve("internationalization")
+    assert len(candidates) == 1
+    assert candidates[0].doc_id == doc_id
+    
+    candidates_pers = pref_retriever.retrieve("personalization")
+    assert len(candidates_pers) == 1
+    assert candidates_pers[0].doc_id == doc_id
+
+def test_query_stuffing(test_db, tokenizer):
+    prefix_idx = PrefixIndexer(test_db, tokenizer)
+    doc_id = test_db.insert_document("Deep Learning", "Deep neural networks are deep", "Blog")
+    prefix_idx.index_document(doc_id, "Deep Learning", "Deep neural networks are deep")
+    
+    pref_retriever = PrefixRetriever(test_db, tokenizer)
+    
+    # Query stuffing: 'deep deep deep' vs 'deep'
+    candidates_single = pref_retriever.retrieve("deep")
+    candidates_stuffed = pref_retriever.retrieve("deep deep deep")
+    
+    assert len(candidates_single) == 1
+    assert len(candidates_stuffed) == 1
+    # Both should have exactly the same raw prefix score
+    assert candidates_single[0].scores["prefix_raw"] == candidates_stuffed[0].scores["prefix_raw"]

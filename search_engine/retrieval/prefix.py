@@ -9,6 +9,8 @@ class PrefixRetriever:
     Retrieves candidate documents matching query term prefixes.
     """
 
+    MAX_PREFIX_LENGTH = 12
+
     def __init__(self, storage: SQLiteStorage, tokenizer: Tokenizer) -> None:
         self.storage = storage
         self.tokenizer = tokenizer
@@ -28,12 +30,17 @@ class PrefixRetriever:
         if not tokens:
             return []
 
+        # Deduplicate query tokens to prevent query stuffing (Task 2)
+        tokens = list(dict.fromkeys(tokens))
+
         # Accumulator: doc_id -> sum of matching prefix frequencies
         raw_scores: Dict[int, int] = defaultdict(int)
 
         # Retrieve matching doc IDs for each prefix token
         for token in tokens:
-            matches = self.storage.get_documents_by_prefix(token)
+            # Truncate token to MAX_PREFIX_LENGTH to support long words (Task 1)
+            lookup_token = token[:self.MAX_PREFIX_LENGTH]
+            matches = self.storage.get_documents_by_prefix(lookup_token)
             for doc_id, frequency in matches:
                 raw_scores[doc_id] += frequency
 
