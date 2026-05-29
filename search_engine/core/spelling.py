@@ -33,11 +33,27 @@ class SpellingCorrector:
 
         return previous_row[-1]
 
+    @staticmethod
+    def _get_word_scripts(word: str) -> Set[str]:
+        """Identifies all Unicode scripts present in the alphabetic characters of a word."""
+        import unicodedata
+        scripts = set()
+        for char in word:
+            if char.isalpha():
+                try:
+                    name = unicodedata.name(char)
+                    first_word = name.split()[0]
+                    scripts.add(first_word)
+                except ValueError:
+                    pass
+        return scripts
+
     def correct_query(self, query: str) -> Optional[str]:
         """
         Tokenizes the query, checks each token against the system vocabulary.
         If a token is misspelled (not in vocabulary), finds the closest match
-        with Levenshtein distance <= 2.
+        with Levenshtein distance <= 2, enforcing script compatibility to prevent
+        cross-script corrections.
         Returns the corrected query string if corrections were made, or None otherwise.
         """
         tokens = self.tokenizer.tokenize(query)
@@ -59,10 +75,16 @@ class SpellingCorrector:
             # Token is misspelled! Find the best match in the vocabulary
             best_candidate = token
             best_distance = 3  # We only correct for distance <= 2
+            token_scripts = self._get_word_scripts(token)
 
             for vocab_word in vocab:
                 # Early length filter for performance optimization
                 if abs(len(vocab_word) - len(token)) >= best_distance:
+                    continue
+
+                # Enforce Unicode script compatibility
+                vocab_scripts = self._get_word_scripts(vocab_word)
+                if token_scripts and vocab_scripts and not (token_scripts & vocab_scripts):
                     continue
 
                 dist = self.levenshtein_distance(token, vocab_word)
