@@ -1,0 +1,122 @@
+[
+  {
+    "title": "Deep Researcher V2",
+    "content": "An autonomous AI agent engineered for recursive web scraping, source evaluation, and comprehensive knowledge synthesis across complex domains.",
+    "type": "Project",
+    "url": "https://github.com/example/deep-researcher-v2"
+  },
+  {
+    "title": "Deep Research Notes",
+    "content": "A technical blog post detailing how modern AI agents manage state, track scraping tokens, and structure long-term memory constraints.",
+    "type": "Blog",
+    "url": "https://blog.example/deep-research-notes"
+  },
+  {
+    "title": "Advanced Search Engines and Indices",
+    "content": "An academic journal exploring prefix index structures, trigram-based typo tolerance algorithms, and high-performance in-memory candidate rankers.",
+    "type": "Journal",
+    "url": "https://journal.example/advanced-search-indices"
+  },
+  {
+    "title": "Agentic Workflows in Python",
+    "content": "A documentation page detailing how to choreograph stateful multi-agent systems using stateless tokenization and SQLite storage backends.",
+    "type": "Page",
+    "url": "https://docs.example/agentic-workflows"
+  },
+  {
+    "title": "SQLite Index Optimization Guide",
+    "content": "An in-depth blog post detailing how to leverage composite primary keys in SQLite for low-overhead prefix and trigram lookups under high concurrent loads.",
+    "type": "Blog",
+    "url": "https://blog.example/sqlite-index-optimization"
+  },
+  {
+    "title": "Rust vs Python Performance Benchmark",
+    "content": "A comparison blog detailing systems engineering tradeoffs between Rust compiled binaries and Python highly dynamic, duck-typed pipeline architectures.",
+    "type": "Blog",
+    "url": "https://blog.example/rust-vs-python"
+  },
+  {
+    "title": "Neural Rankers and XGBoost Models in Search V2",
+    "content": "A machine learning journal studying the transition from weighted heuristical rankers to advanced XGBoost and point-wise neural ranking mechanisms.",
+    "type": "Journal",
+    "url": "https://journal.example/neural-rankers-v2"
+  },
+  {
+    "title": "Project FBLens Browser",
+    "content": "An open-source desktop visualization browser optimized for analyzing Facebook graph relations, page structures, and group network nodes.",
+    "type": "Project",
+    "url": "https://github.com/pixelthreader/FBLens"
+  },
+  {
+    "title": "Custom Autocomplete Engine V1",
+    "content": "A lightweight, local-first autocomplete engine built from scratch using SQLite, prefix indices, character trigram typo tolerance, and a modular weighted ranker.",
+    "type": "Project",
+    "url": "https://github.com/example/autocomplete-engine"
+  },
+  {
+    "title": "Personalization in Autocomplete",
+    "content": "A research page analyzing user click signals, geo-locality features, and history parameters to dynamically personalize local search lists in real-time.",
+    "type": "Page",
+    "url": "https://docs.example/search-personalization"
+  },
+  {
+    "title": "Typo Tolerance with Character N-Grams",
+    "content": "A comprehensive study on spelling correction, string distance equations, and Jaccard set-intersection measurements utilizing character-level trigrams.",
+    "type": "Journal",
+    "url": "https://journal.example/trigram-typo-tolerance"
+  },
+  {
+    "title": "LLM Orchestrator v3 Framework",
+    "content": "A premium multi-agent orchestrator framework built on Pydantic validation rules, supporting strict retries and local Ollama model coordination.",
+    "type": "Project",
+    "url": "https://github.com/example/llm-orchestrator-v3"
+  },
+  {
+    "title": "Designing Premium Web UI Components",
+    "content": "A blog post outlining visual design best practices, tailored HSL color palettes, liquid-glass aesthetics, and subtle micro-animations for developer portfolios.",
+    "type": "Blog",
+    "url": "https://blog.example/designing-premium-ui"
+  },
+  {
+    "title": "Search Engines Under The Hood",
+    "content": "An ultimate documentation page covering standard indexing pipelines, reverse indexes, sparse retrieval, and candidate hydration bottlenecks.",
+    "type": "Page",
+    "url": "https://docs.example/under-the-hood"
+  },
+  {
+    "title": "Prefixes and Suffixes in Word Slicing",
+    "content": "A linguistics journal evaluating the impact of word boundaries, padding symbols, and suffix bounds on candidate lookup performance in FTS indexers.",
+    "type": "Journal",
+    "url": "https://journal.example/word-slicing-ngrams"
+  },
+  {
+    "title": "Fast Web Scraping with Ollama Assistance",
+    "content": "A blog outlining smart parsing techniques using local LLM inference to extract high-density metadata while strictly staying inside context limits.",
+    "type": "Blog",
+    "url": "https://blog.example/scraping-with-ollama"
+  },
+  {
+    "title": "Liquid Glass Header UI Guide",
+    "content": "A design layout tutorial demonstrating how to write modular Tailwind CSS and Framer-Motion code to create slick sliding active header indicators.",
+    "type": "Page",
+    "url": "https://docs.example/liquid-glass-ui"
+  },
+  {
+    "title": "Next.js and Tailwind Onboarding Setup",
+    "content": "A comprehensive page detailing modern onboarding processes for junior developers setting up React workspaces, Next.js routes, and Tailwind styling standards.",
+    "type": "Page",
+    "url": "https://docs.example/nextjs-tailwind-onboarding"
+  },
+  {
+    "title": "Vector Databases vs SQLite FTS5 Search",
+    "content": "A benchmark journal assessing accuracy and latency differences between dense neural vector lookups and lightweight classical inverted indexing.",
+    "type": "Journal",
+    "url": "https://journal.example/vector-vs-sqlite-fts5"
+  },
+  {
+    "title": "Project Antigravity Assistant",
+    "content": "An advanced AI-powered coding pair programmer engineered to build production-grade architectures with zero stubs, high testability, and strict Git isolation.",
+    "type": "Project",
+    "url": "https://github.com/example/project-antigravity"
+  }
+]

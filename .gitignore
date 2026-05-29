@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.pytest_cache/
+
+# Databases
+*.db
+*.sqlite
+search.db
+test_search_fixture.db
