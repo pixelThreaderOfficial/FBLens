@@ -28,9 +28,6 @@ CREATE TABLE IF NOT EXISTS prefix_index (
     FOREIGN KEY (doc_id) REFERENCES documents (id) ON DELETE CASCADE
 );
 
--- Index specifically on prefix for fast retrieval during lookups.
-CREATE INDEX IF NOT EXISTS idx_prefix_lookup ON prefix_index (prefix);
-
 -- 3. Trigram Index Table
 -- Maps a character trigram (3-character slice of a word, e.g., 'res', 'ese', 'sea') to a document.
 -- Character trigrams are used for typo-tolerant / fuzzy search by matching overlapping trigrams.
@@ -42,6 +39,3 @@ CREATE TABLE IF NOT EXISTS trigram_index (
     PRIMARY KEY (trigram, doc_id),
     FOREIGN KEY (doc_id) REFERENCES documents (id) ON DELETE CASCADE
 );
-
--- Index specifically on trigram for fast lookup during typo-tolerant retrieval.
-CREATE INDEX IF NOT EXISTS idx_trigram_lookup ON trigram_index (trigram);
