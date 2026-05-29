@@ -82,13 +82,46 @@ def test_weighted_ranker_computes_correct_scores():
     
     ranked = ranker.rank("test query", candidates)
     
-    # Candidate 2 should be first in rank because 0.68 > 0.54
+    # Candidate 2 should be first in rank because 6.08 > 3.24
     assert ranked[0].doc_id == 2
-    assert abs(ranked[0].score - 0.68) < 1e-6
+    assert abs(ranked[0].score - 6.08) < 1e-6
 
     # Candidate 1 should be second
     assert ranked[1].doc_id == 1
-    assert abs(ranked[1].score - 0.54) < 1e-6
+    assert abs(ranked[1].score - 3.24) < 1e-6
+
+def test_rank_reversal_elimination():
+    ranker = WeightedRanker({"prefix_weight": 0.6, "trigram_weight": 0.4})
+    
+    # We have two candidates
+    # Cand A (id=1): prefix_raw=10, trigram_raw=3
+    # Cand B (id=2): prefix_raw=15, trigram_raw=1
+    cand_a = ScoredCandidate(doc_id=1, scores={"prefix_raw": 10.0, "trigram_raw": 3.0, "query_trigram_count": 5.0})
+    cand_b = ScoredCandidate(doc_id=2, scores={"prefix_raw": 15.0, "trigram_raw": 1.0, "query_trigram_count": 5.0})
+    
+    # Rank them
+    pool_1 = [cand_a, cand_b]
+    ranked_1 = ranker.rank("test query", pool_1)
+    
+    # Extract scores before adding Candidate C
+    score_a1 = next(c.score for c in ranked_1 if c.doc_id == 1)
+    score_b1 = next(c.score for c in ranked_1 if c.doc_id == 2)
+    
+    # Now we introduce a third Candidate C with high prefix_raw=50
+    cand_c = ScoredCandidate(doc_id=3, scores={"prefix_raw": 50.0, "trigram_raw": 0.0, "query_trigram_count": 5.0})
+    
+    # Re-rank with the enlarged candidate pool
+    pool_2 = [cand_a, cand_b, cand_c]
+    ranked_2 = ranker.rank("test query", pool_2)
+    
+    # Extract scores after adding Candidate C
+    score_a2 = next(c.score for c in ranked_2 if c.doc_id == 1)
+    score_b2 = next(c.score for c in ranked_2 if c.doc_id == 2)
+    
+    # Assert that absolute scores and relative ordering remain perfectly stable
+    assert score_a1 == score_a2
+    assert score_b1 == score_b2
+    assert (score_a1 > score_b1) == (score_a2 > score_b2)
 
 def test_pipeline_end_to_end(test_db, tokenizer):
     prefix_idx = PrefixIndexer(test_db, tokenizer)

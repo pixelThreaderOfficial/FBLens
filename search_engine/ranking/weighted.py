@@ -22,7 +22,7 @@ class WeightedRanker:
         candidates in descending order.
         
         Args:
-            query: The user's search query (retained for future-proofing interfaces).
+            query: The user's search query.
             candidates: The list of lightweight ScoredCandidates with raw scores.
             
         Returns:
@@ -31,11 +31,19 @@ class WeightedRanker:
         if not candidates:
             return []
 
-        # 1. Prefix Normalization: find the maximum raw prefix score in the current candidate pool
-        max_prefix_raw = max(
-            (cand.scores.get("prefix_raw", 0.0) for cand in candidates),
-            default=0.0
-        )
+        # Calculate query-dependent normalizers to prevent Rank Reversal (Task 8)
+        from search_engine.indexing.tokenizer import Tokenizer
+        tokenizer = Tokenizer()
+        tokens = tokenizer.tokenize(query)
+        query_token_count = float(len(tokens)) if tokens else 1.0
+
+        # Calculate total trigrams in the query
+        query_trigrams_count = 0.0
+        for token in tokens:
+            if len(token) >= 3:
+                query_trigrams_count += float(len(token) - 2)
+        if query_trigrams_count == 0.0:
+            query_trigrams_count = 1.0
 
         ranked_candidates: List[ScoredCandidate] = []
 
@@ -43,15 +51,15 @@ class WeightedRanker:
         for cand in candidates:
             prefix_raw = cand.scores.get("prefix_raw", 0.0)
             trigram_raw = cand.scores.get("trigram_raw", 0.0)
-            query_trigram_count = cand.scores.get("query_trigram_count", 0.0)
 
-            # Normalize Prefix Score relative to max in pool
-            prefix_score = prefix_raw / max_prefix_raw if max_prefix_raw > 0.0 else 0.0
+            # Normalize Prefix Score relative to the number of tokens in query
+            prefix_score = prefix_raw / query_token_count
 
-            # Normalize Trigram Similarity relative to total query trigrams
-            trigram_similarity = (
-                trigram_raw / query_trigram_count if query_trigram_count > 0.0 else 0.0
-            )
+            # Normalize Trigram Similarity relative to query trigram count
+            cand_query_trigram_count = cand.scores.get("query_trigram_count", query_trigrams_count)
+            if cand_query_trigram_count <= 0.0:
+                cand_query_trigram_count = 1.0
+            trigram_similarity = trigram_raw / cand_query_trigram_count
 
             # Compute Final Score
             final_score = (prefix_score * self.prefix_weight) + (trigram_similarity * self.trigram_weight)
