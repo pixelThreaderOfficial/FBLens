@@ -198,3 +198,56 @@ class SQLiteStorage:
 
         self._vocab_cache = vocab
         return vocab
+
+    def record_click(self, query: str, doc_id: int) -> int:
+        """
+        Inserts a new click analytics record when a user selects/clicks a document for a query.
+        Returns the auto-generated click ID.
+        """
+        insert_query = """
+            INSERT INTO click_analytics (query, clicked_document)
+            VALUES (?, ?)
+        """
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        cursor.execute(insert_query, (query, doc_id))
+        if not self._in_transaction:
+            conn.commit()
+        return cursor.lastrowid
+
+    def get_document_click_counts(self) -> Dict[int, int]:
+        """
+        Retrieves the aggregate click count for all documents.
+        Returns a dictionary mapping doc_id -> click_count.
+        """
+        query = """
+            SELECT clicked_document, COUNT(*) as click_count
+            FROM click_analytics
+            GROUP BY clicked_document
+        """
+        conn = self._get_connection()
+        rows = conn.execute(query).fetchall()
+        return {row["clicked_document"]: row["click_count"] for row in rows}
+
+    def get_click_count_for_document(self, doc_id: int) -> int:
+        """Retrieves the aggregate click count for a specific document."""
+        query = """
+            SELECT COUNT(*) as click_count
+            FROM click_analytics
+            WHERE clicked_document = ?
+        """
+        conn = self._get_connection()
+        row = conn.execute(query, (doc_id,)).fetchone()
+        return row["click_count"] if row else 0
+
+    def get_click_logs(self, limit: int = 100) -> List[Dict[str, Any]]:
+        """Retrieves the most recent click logs, ordered by timestamp descending."""
+        query = """
+            SELECT id, query, clicked_document, timestamp
+            FROM click_analytics
+            ORDER BY timestamp DESC
+            LIMIT ?
+        """
+        conn = self._get_connection()
+        rows = conn.execute(query, (limit,)).fetchall()
+        return [dict(row) for row in rows]

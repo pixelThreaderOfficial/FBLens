@@ -38,3 +38,17 @@ CREATE TABLE IF NOT EXISTS trigram_index (
     PRIMARY KEY (trigram, doc_id),
     FOREIGN KEY (doc_id) REFERENCES documents (id) ON DELETE CASCADE
 );
+
+-- 4. Click Analytics (Popularity Infrastructure) Table
+-- Tracks search query clicks to build popularity metrics for future rankers.
+CREATE TABLE IF NOT EXISTS click_analytics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    query TEXT NOT NULL,
+    clicked_document INTEGER NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (clicked_document) REFERENCES documents (id) ON DELETE CASCADE
+);
+
+-- Indexes to optimize click lookup query speeds for rankers
+CREATE INDEX IF NOT EXISTS idx_click_analytics_document ON click_analytics (clicked_document);
+CREATE INDEX IF NOT EXISTS idx_click_analytics_query ON click_analytics (query);

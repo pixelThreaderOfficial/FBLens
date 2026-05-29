@@ -260,3 +260,29 @@ def test_pipeline_spelling_fallback(test_db, tokenizer):
     results = pipeline.search("sqltie", limit=5)
     assert len(results) >= 1
     assert results[0].document.title == "Learn SQLite Database"
+
+def test_click_analytics_infrastructure(test_db):
+    # Insert a document to satisfy foreign keys
+    doc_id = test_db.insert_document("Click Target", "Content here", "Blog")
+    
+    # Record clicks
+    click_id1 = test_db.record_click("search query 1", doc_id)
+    click_id2 = test_db.record_click("search query 2", doc_id)
+    
+    assert click_id1 > 0
+    assert click_id2 > 0
+    
+    # Test individual retrieval
+    count = test_db.get_click_count_for_document(doc_id)
+    assert count == 2
+    
+    # Test bulk counts retrieval
+    counts = test_db.get_document_click_counts()
+    assert counts == {doc_id: 2}
+    
+    # Test click logs retrieval
+    logs = test_db.get_click_logs()
+    assert len(logs) == 2
+    assert logs[0]["query"] in ("search query 1", "search query 2")
+    assert logs[0]["clicked_document"] == doc_id
+    assert "timestamp" in logs[0]
