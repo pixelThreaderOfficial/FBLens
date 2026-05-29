@@ -181,3 +181,49 @@ def test_storage_transactions(test_db):
     conn = test_db._get_connection()
     row = conn.execute("SELECT id FROM documents WHERE title = 'Trans Title 3'").fetchone()
     assert row is None
+
+def test_spelling_corrector(test_db, tokenizer):
+    from search_engine.core.spelling import SpellingCorrector
+    
+    # Pre-populate index vocabulary
+    doc_id = test_db.insert_document("Advanced Search Designer", "Learn to optimize databases and queries.", "Tutorial")
+    # Initialize spelling corrector
+    corrector = SpellingCorrector(test_db, tokenizer)
+    
+    # Test Levenshtein distance
+    assert SpellingCorrector.levenshtein_distance("kitten", "sitting") == 3
+    assert SpellingCorrector.levenshtein_distance("sqlite", "sqltie") == 2
+    assert SpellingCorrector.levenshtein_distance("search", "sreach") == 2
+    
+    # Test correction suggestion
+    # "desinger" -> "designer" (Levenshtein = 2)
+    suggestion = corrector.correct_query("desinger")
+    assert suggestion == "designer"
+    
+    # Correct word should not change
+    assert corrector.correct_query("search") is None
+
+def test_pipeline_spelling_fallback(test_db, tokenizer):
+    from search_engine.retrieval.prefix import PrefixRetriever
+    from search_engine.retrieval.trigram import TrigramRetriever
+    from search_engine.retrieval.hybrid import HybridRetriever
+    from search_engine.ranking.weighted import WeightedRanker
+    
+    prefix_idx = PrefixIndexer(test_db, tokenizer)
+    trigram_idx = TrigramIndexer(test_db, tokenizer)
+    
+    doc_id = test_db.insert_document("Learn SQLite Database", "Mastering structured queries in SQLite.", "Book")
+    prefix_idx.index_document(doc_id, "Learn SQLite Database", "Mastering structured queries in SQLite.")
+    trigram_idx.index_document(doc_id, "Learn SQLite Database", "Mastering structured queries in SQLite.")
+    
+    # Set up pipeline
+    pref_ret = PrefixRetriever(test_db, tokenizer)
+    trig_ret = TrigramRetriever(test_db, tokenizer)
+    hyb_ret = HybridRetriever(pref_ret, trig_ret)
+    ranker = WeightedRanker({"prefix_weight": 0.5, "trigram_weight": 0.5})
+    pipeline = SearchPipeline(test_db, hyb_ret, ranker)
+    
+    # Query: 'sqltie' (typo for 'sqlite') which will return no direct matches
+    results = pipeline.search("sqltie", limit=5)
+    assert len(results) >= 1
+    assert results[0].document.title == "Learn SQLite Database"

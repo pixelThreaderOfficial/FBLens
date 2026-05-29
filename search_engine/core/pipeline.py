@@ -34,7 +34,21 @@ class SearchPipeline:
         # 2. Retrieve lightweight candidate pool (raw signals only)
         candidates = self.retriever.retrieve(stripped_query)
         if not candidates:
-            return []
+            # Lazy import to avoid circular dependencies
+            from search_engine.core.spelling import SpellingCorrector
+            from search_engine.indexing.tokenizer import Tokenizer
+            
+            corrector = SpellingCorrector(self.storage, Tokenizer())
+            corrected_query = corrector.correct_query(stripped_query)
+            if corrected_query and corrected_query != stripped_query:
+                # Retry retrieval with the corrected query
+                candidates = self.retriever.retrieve(corrected_query)
+                if not candidates:
+                    return []
+                # Update query to corrected_query for ranking
+                stripped_query = corrected_query
+            else:
+                return []
 
         # 3. Perform in-memory feature derivation and ranking
         ranked_candidates = self.ranker.rank(stripped_query, candidates)
